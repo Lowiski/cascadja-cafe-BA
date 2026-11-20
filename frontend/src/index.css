@@ -1,0 +1,3 @@
+/* Cascadja Cafe - entry stylesheet.
+   The design system lives in assets/styles: variables + global rules. */
+@import './assets/styles/global.css';

@@ -1,0 +1,28 @@
+/* ============================================================
+   Cascadja Cafe - Business Analytics Capstone
+   Design system: warm espresso, cream paper, caramel accents
+   ============================================================ */
+
+:root {
+  --bg: #f4ede3;
+  --paper: #fffdfa;
+  --paper-2: #faf4ec;
+  --ink: #2e211a;
+  --ink-soft: #6d5a4c;
+  --ink-faint: #9a887a;
+  --line: rgba(59, 42, 32, 0.12);
+  --line-soft: rgba(59, 42, 32, 0.07);
+  --espresso: #2b1d16;
+  --espresso-2: #3a2a20;
+  --caramel: #c08552;
+  --caramel-deep: #a76b3d;
+  --sage: #6f7f63;
+  --berry: #a44a3f;
+  --plum: #7d6b8f;
+  --gold: #d9a441;
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(43, 29, 22, 0.04), 0 18px 40px -28px rgba(43, 29, 22, 0.35);
+  --sidebar-w: 252px;
+  --serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
