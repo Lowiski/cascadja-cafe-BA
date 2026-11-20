@@ -165,7 +165,49 @@ cascadja-cafe/
         └── data/                # generateRealData.js (+ legacy generator)
 ```
 
-## 8. Troubleshooting
+## 8. Deploy — Vercel frontend + Render API
+
+Push the repo to GitHub first (`.env` is ignored). Then deploy the two halves:
+
+### Backend on Render
+
+| Setting | Value |
+| --- | --- |
+| Runtime | Node |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Health Check Path | `/api/health` |
+| `DATABASE_URL` | your Neon connection string |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | change the local defaults |
+| `AUTH_SECRET` | long random string |
+| `CLIENT_URL` | the exact Vercel URL, e.g. `https://cascadja.vercel.app` |
+
+Do **not** set `PORT` manually — Render provides it. Do **not** add `db:setup` to the build command; it drops and recreates tables. Seed once on a fresh Neon database before the first deploy.
+
+### Frontend on Vercel
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | repository root |
+| Build Command | `npm run build -w frontend` |
+| Output Directory | `frontend/dist` |
+| `VITE_API_URL` | `https://YOUR-RENDER-APP.onrender.com/api` |
+
+`vercel.json` at the repo root rewrites all client-side routes (`/login`, `/analytics`, …) to `index.html`, so direct links and refreshes work.
+
+Vite bakes `VITE_API_URL` into the bundle at build time — set it **before** deploying and redeploy after changing it. Keep `CLIENT_URL` on Render identical to your real Vercel origin or the browser will block the API call with CORS.
+
+### Verify
+
+1. Open the Vercel URL → it should redirect to `/login`.
+2. Sign in with the credentials set on Render.
+3. Badge should read **Neon Postgres**.
+4. Add a menu item or sale and confirm it persists after refresh.
+5. Check `https://YOUR-RENDER-APP.onrender.com/api/health`.
+
+Render's free plan sleeps after inactivity; warm it up before a live demo.
+
+## 9. Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
