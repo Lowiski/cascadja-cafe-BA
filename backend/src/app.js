@@ -4,32 +4,75 @@ import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import apiRouter from './routes/api.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
-const allowedOrigins = [process.env.CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'].filter(Boolean);
 
-app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : true }));
+// Allowed frontend domains
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CLIENT_URL_ALT,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+].filter(Boolean);
+
+// CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests without an Origin header (e.g. server-to-server)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.warn(`CORS blocked origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options(/.*/, cors(corsOptions));
+
+// Parse JSON requests
 app.use(express.json({ limit: '1mb' }));
 
-// Analytics and meta must never be served from a browser cache: after the
-// owner adds a sale or menu item the very next request must hit Neon.
+// Prevent API responses from being cached
 app.use('/api', (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
 
+// API routes
 app.use('/api', apiRouter);
 
-// Serve the built React app when it exists (single-service production mode).
+// Serve built React frontend if available
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const clientDist = path.resolve(__dirname, '../../frontend/dist');
+
+const clientDist = path.resolve(
+  __dirname,
+  '../../frontend/dist'
+);
+
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
-  app.get(/^(?!\/api).*/, (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+
+  app.get(/^(?!\/api).*/, (_req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
 }
 
+// Global error handler
 app.use(errorHandler);
 
 export default app;
